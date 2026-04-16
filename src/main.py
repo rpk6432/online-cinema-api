@@ -5,9 +5,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from loguru import logger
 
-from core.config import settings
-from core.exceptions import AppError
-from core.logging import setup_logging
+from core import AppError, settings, setup_logging
 
 
 @asynccontextmanager
