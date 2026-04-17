@@ -1,7 +1,7 @@
 import enum
 from datetime import date, datetime
 
-from sqlalchemy import ForeignKey, String, Text, func
+from sqlalchemy import DateTime, ForeignKey, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from database import Base
@@ -81,7 +81,7 @@ class ActivationToken(Base):
         ForeignKey("users.id", ondelete="CASCADE"), unique=True
     )
     token: Mapped[str] = mapped_column(String(255), unique=True)
-    expires_at: Mapped[datetime] = mapped_column()
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
     user: Mapped[User] = relationship(back_populates="activation_token")
 
@@ -93,7 +93,7 @@ class PasswordResetToken(Base):
         ForeignKey("users.id", ondelete="CASCADE"), unique=True
     )
     token: Mapped[str] = mapped_column(String(255), unique=True)
-    expires_at: Mapped[datetime] = mapped_column()
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
     user: Mapped[User] = relationship(back_populates="password_reset_token")
 
@@ -105,6 +105,6 @@ class RefreshToken(Base):
         ForeignKey("users.id", ondelete="CASCADE")
     )
     token: Mapped[str] = mapped_column(String(500), unique=True)
-    expires_at: Mapped[datetime] = mapped_column()
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
     user: Mapped[User] = relationship(back_populates="refresh_tokens")
