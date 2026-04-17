@@ -14,3 +14,6 @@ class Base(DeclarativeBase):
     metadata = MetaData(naming_convention=convention)
 
     id: Mapped[int] = mapped_column(primary_key=True)
+
+    def __repr__(self) -> str:
+        return f"<{type(self).__name__}(id={self.id})>"

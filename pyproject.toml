@@ -2,7 +2,7 @@
 name = "online-cinema-api"
 version = "0.1.0"
 description = "RESTful API for an online cinema platform built with FastAPI, PostgreSQL, Celery, and Stripe"
-authors = ["Roman Peka <pekaromanmail@gmail.com>"]
+authors = ["Your Name <your@email.com>"]
 license = "MIT"
 readme = "README.md"
 package-mode = false
@@ -40,6 +40,7 @@ pre-commit = "^4.0"
 target-version = "py314"
 line-length = 88
 src = ["src"]
+exclude = ["src/migrations/versions/"]
 
 [tool.ruff.lint]
 select = [
@@ -56,9 +57,7 @@ select = [
 ignore = [
     "S101",  # allow assert in tests
 ]
-exclude = [
-    "src/migrations/versions/",
-]
+
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
@@ -67,6 +66,10 @@ exclude = [
 python_version = "3.14"
 strict = true
 plugins = ["pydantic.mypy"]
+mypy_path = "src"
+explicit_package_bases = true
+implicit_reexport = true
+exclude = ["src/migrations/"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

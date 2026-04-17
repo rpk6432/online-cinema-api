@@ -1,14 +1,12 @@
-from typing import Generic, TypeVar
+from typing import Any
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database import Base
 
-ModelType = TypeVar("ModelType", bound=Base)
 
-
-class CRUDBase(Generic[ModelType]):
+class CRUDBase[ModelType: Base]:
     def __init__(self, model: type[ModelType]) -> None:
         self.model = model
 
@@ -28,7 +26,7 @@ class CRUDBase(Generic[ModelType]):
         result = await db.execute(select(func.count()).select_from(self.model))
         return result.scalar_one()
 
-    async def create(self, db: AsyncSession, **kwargs) -> ModelType:
+    async def create(self, db: AsyncSession, **kwargs: Any) -> ModelType:
         obj = self.model(**kwargs)
         db.add(obj)
         await db.commit()
@@ -36,7 +34,7 @@ class CRUDBase(Generic[ModelType]):
         return obj
 
     async def update(
-        self, db: AsyncSession, obj: ModelType, **kwargs
+        self, db: AsyncSession, obj: ModelType, **kwargs: Any
     ) -> ModelType:
         for key, value in kwargs.items():
             setattr(obj, key, value)
