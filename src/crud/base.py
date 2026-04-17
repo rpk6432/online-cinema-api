@@ -7,6 +7,8 @@ from database import Base
 
 
 class CRUDBase[ModelType: Base]:
+    """Generic async CRUD operations for SQLAlchemy models."""
+
     def __init__(self, model: type[ModelType]) -> None:
         self.model = model
 

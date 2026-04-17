@@ -52,6 +52,11 @@ class User(Base):
         back_populates="user"
     )
 
+    @property
+    def group_name(self) -> str:
+        """Shortcut for serialization — returns the group's display name."""
+        return self.group.name
+
 
 class UserProfile(Base):
     __tablename__ = "user_profiles"
