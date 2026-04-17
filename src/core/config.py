@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+asyncpg://cinema_user:cinema_pass@localhost:5432/cinema_db"
 
     # JWT
-    jwt_secret: str = "change-me-in-production"
+    jwt_secret: str = "change-me-in-production-to-something-secure"
     jwt_access_ttl_minutes: int = 30
     jwt_refresh_ttl_days: int = 7
 

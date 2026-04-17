@@ -1,3 +1,4 @@
+import secrets
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
@@ -20,6 +21,7 @@ def create_access_token(user_id: int) -> str:
     payload = {
         "sub": str(user_id),
         "type": "access",
+        "jti": secrets.token_hex(16),
         "exp": datetime.now(UTC)
         + timedelta(minutes=settings.jwt_access_ttl_minutes),
     }
@@ -30,6 +32,7 @@ def create_refresh_token(user_id: int) -> str:
     payload = {
         "sub": str(user_id),
         "type": "refresh",
+        "jti": secrets.token_hex(16),
         "exp": datetime.now(UTC)
         + timedelta(days=settings.jwt_refresh_ttl_days),
     }
