@@ -9,6 +9,7 @@ from sqlalchemy.exc import IntegrityError
 from core import AppError, settings, setup_logging
 from database.seed import seed_user_groups
 from database.session import async_session
+from routes import router
 
 
 @asynccontextmanager
@@ -27,6 +28,8 @@ app = FastAPI(
     debug=settings.debug,
     lifespan=lifespan,
 )
+
+app.include_router(router)
 
 
 @app.exception_handler(AppError)
