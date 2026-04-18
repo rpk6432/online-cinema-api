@@ -45,5 +45,28 @@ class CRUDUser(CRUDBase[User]):
         await db.refresh(user, attribute_names=["group"])
         return user
 
+    async def get_multi_with_group(
+        self, db: AsyncSession, skip: int = 0, limit: int = 20
+    ) -> list[User]:
+        """Load users with eagerly loaded group relationship."""
+        result = await db.execute(
+            select(User).options(selectinload(User.group)).offset(skip).limit(limit)
+        )
+        return list(result.scalars().all())
+
+    async def change_group(
+        self, db: AsyncSession, user: User, group_name: UserGroupEnum
+    ) -> User:
+        """Change user's group."""
+        result = await db.execute(
+            select(UserGroup).where(UserGroup.name == group_name.value)
+        )
+        group = result.scalar_one()
+
+        user.group_id = group.id
+        await db.commit()
+        await db.refresh(user, attribute_names=["group"])
+        return user
+
 
 user_crud = CRUDUser(User)

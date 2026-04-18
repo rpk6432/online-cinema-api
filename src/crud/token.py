@@ -39,6 +39,12 @@ async def delete_activation_token(db: AsyncSession, token_obj: ActivationToken) 
     await db.commit()
 
 
+async def delete_activation_token_by_user(db: AsyncSession, user_id: int) -> None:
+    """Delete activation token for a user, if one exists."""
+    await db.execute(delete(ActivationToken).where(ActivationToken.user_id == user_id))
+    await db.commit()
+
+
 async def create_password_reset_token(
     db: AsyncSession, user_id: int, hours: int = 1
 ) -> PasswordResetToken:
