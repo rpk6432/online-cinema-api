@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from crud.base import CRUDBase
-from models.user import User, UserGroup, UserGroupEnum
+from models.user import User, UserGroup, UserGroupEnum, UserProfile
 
 
 class CRUDUser(CRUDBase[User]):
@@ -38,6 +38,9 @@ class CRUDUser(CRUDBase[User]):
             group_id=group.id,
         )
         db.add(user)
+        await db.flush()
+
+        db.add(UserProfile(user_id=user.id))
         await db.commit()
         await db.refresh(user, attribute_names=["group"])
         return user
