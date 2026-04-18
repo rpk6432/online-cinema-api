@@ -17,9 +17,7 @@ _bearer = HTTPBearer(auto_error=False)
 
 
 async def get_current_user(
-    credentials: Annotated[
-        HTTPAuthorizationCredentials | None, Depends(_bearer)
-    ],
+    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer)],
     db: DBSession,
 ) -> User:
     """Extract and validate JWT from Authorization header, return user."""

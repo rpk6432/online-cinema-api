@@ -114,9 +114,7 @@ async def resend_activation(
 async def login(body: LoginRequest, db: DBSession) -> TokenResponse:
     """Authenticate with email and password, receive a JWT token pair."""
     user = await user_crud.get_by_email(db, body.email)
-    if user is None or not verify_password(
-        body.password, user.hashed_password
-    ):
+    if user is None or not verify_password(body.password, user.hashed_password):
         raise UnauthorizedError("Invalid email or password")
     if not user.is_active:
         raise ForbiddenError("Account is not activated")
@@ -158,9 +156,7 @@ async def refresh(body: RefreshRequest, db: DBSession) -> TokenResponse:
     access = create_access_token(token_record.user_id)
     new_refresh = create_refresh_token(token_record.user_id)
 
-    await create_refresh_token_record(
-        db, token_record.user_id, new_refresh
-    )
+    await create_refresh_token_record(db, token_record.user_id, new_refresh)
 
     return TokenResponse(access_token=access, refresh_token=new_refresh)
 
@@ -187,9 +183,7 @@ async def password_change(
     "/password-reset",
     summary="Request password reset",
 )
-async def password_reset(
-    body: PasswordResetRequest, db: DBSession
-) -> MessageResponse:
+async def password_reset(body: PasswordResetRequest, db: DBSession) -> MessageResponse:
     """Send a password reset email if the account exists."""
     user = await user_crud.get_by_email(db, body.email)
     if user is not None:

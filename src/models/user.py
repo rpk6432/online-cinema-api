@@ -39,18 +39,14 @@ class User(Base):
     group_id: Mapped[int] = mapped_column(ForeignKey("user_groups.id"))
 
     group: Mapped[UserGroup] = relationship(back_populates="users")
-    profile: Mapped[UserProfile] = relationship(
-        back_populates="user", uselist=False
-    )
+    profile: Mapped[UserProfile] = relationship(back_populates="user", uselist=False)
     activation_token: Mapped[ActivationToken] = relationship(
         back_populates="user", uselist=False
     )
     password_reset_token: Mapped[PasswordResetToken] = relationship(
         back_populates="user", uselist=False
     )
-    refresh_tokens: Mapped[list[RefreshToken]] = relationship(
-        back_populates="user"
-    )
+    refresh_tokens: Mapped[list[RefreshToken]] = relationship(back_populates="user")
 
     @property
     def group_name(self) -> str:
@@ -101,9 +97,7 @@ class PasswordResetToken(Base):
 class RefreshToken(Base):
     __tablename__ = "refresh_tokens"
 
-    user_id: Mapped[int] = mapped_column(
-        ForeignKey("users.id", ondelete="CASCADE")
-    )
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
     token: Mapped[str] = mapped_column(String(500), unique=True)
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 

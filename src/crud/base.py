@@ -19,9 +19,7 @@ class CRUDBase[ModelType: Base]:
     async def get_multi(
         self, db: AsyncSession, skip: int = 0, limit: int = 20
     ) -> list[ModelType]:
-        result = await db.execute(
-            select(self.model).offset(skip).limit(limit)
-        )
+        result = await db.execute(select(self.model).offset(skip).limit(limit))
         return list(result.scalars().all())
 
     async def count(self, db: AsyncSession) -> int:

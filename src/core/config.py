@@ -14,7 +14,9 @@ class Settings(BaseSettings):
     debug: bool = False
 
     # Database
-    database_url: str = "postgresql+asyncpg://cinema_user:cinema_pass@localhost:5432/cinema_db"
+    database_url: str = (
+        "postgresql+asyncpg://cinema_user:cinema_pass@localhost:5432/cinema_db"
+    )
 
     # JWT
     jwt_secret: str = "change-me-in-production-to-something-secure"
