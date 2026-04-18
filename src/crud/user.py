@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from crud.base import CRUDBase
-from models.user import User, UserGroup, UserGroupEnum
+from models.user import User, UserGroup, UserGroupEnum, UserProfile
 
 
 class CRUDUser(CRUDBase[User]):
@@ -38,6 +38,32 @@ class CRUDUser(CRUDBase[User]):
             group_id=group.id,
         )
         db.add(user)
+        await db.flush()
+
+        db.add(UserProfile(user_id=user.id))
+        await db.commit()
+        await db.refresh(user, attribute_names=["group"])
+        return user
+
+    async def get_multi_with_group(
+        self, db: AsyncSession, skip: int = 0, limit: int = 20
+    ) -> list[User]:
+        """Load users with eagerly loaded group relationship."""
+        result = await db.execute(
+            select(User).options(selectinload(User.group)).offset(skip).limit(limit)
+        )
+        return list(result.scalars().all())
+
+    async def change_group(
+        self, db: AsyncSession, user: User, group_name: UserGroupEnum
+    ) -> User:
+        """Change user's group."""
+        result = await db.execute(
+            select(UserGroup).where(UserGroup.name == group_name.value)
+        )
+        group = result.scalar_one()
+
+        user.group_id = group.id
         await db.commit()
         await db.refresh(user, attribute_names=["group"])
         return user

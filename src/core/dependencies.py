@@ -55,3 +55,6 @@ def require_group(
         return user
 
     return check_group
+
+
+AdminUser = Annotated[User, Depends(require_group(UserGroupEnum.ADMIN))]

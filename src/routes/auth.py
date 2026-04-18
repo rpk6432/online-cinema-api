@@ -36,9 +36,9 @@ from schemas.auth import (
     RegisterRequest,
     ResendActivationRequest,
     TokenResponse,
-    UserResponse,
 )
 from schemas.common import MessageResponse
+from schemas.users import UserResponse
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 

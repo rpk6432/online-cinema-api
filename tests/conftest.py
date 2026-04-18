@@ -15,6 +15,7 @@ from database.seed import seed_user_groups
 from database.session import get_db_session
 from main import app
 from models import user as _user_models  # noqa: F401
+from models.user import UserGroupEnum
 
 test_settings = Settings(_env_file=".env.test")
 test_engine = create_async_engine(test_settings.database_url)
@@ -96,4 +97,28 @@ async def auth_headers(
     client: AsyncClient, active_user: dict[str, str]
 ) -> dict[str, str]:
     tokens = await _login_user(client)
+    return {"Authorization": f"Bearer {tokens['access_token']}"}
+
+
+async def _make_admin(db: AsyncSession, email: str) -> None:
+    user = await user_crud.get_by_email(db, email)
+    assert user is not None
+    await user_crud.change_group(db, user, UserGroupEnum.ADMIN)
+
+
+@pytest.fixture
+async def admin_user(client: AsyncClient, db: AsyncSession) -> dict[str, str]:
+    creds = await _register_user(client, email="admin@example.com")
+    await _activate_user(db, creds["email"])
+    await _make_admin(db, creds["email"])
+    return creds
+
+
+@pytest.fixture
+async def admin_headers(
+    client: AsyncClient, admin_user: dict[str, str]
+) -> dict[str, str]:
+    tokens = await _login_user(
+        client, email=admin_user["email"], password=admin_user["password"]
+    )
     return {"Authorization": f"Bearer {tokens['access_token']}"}
