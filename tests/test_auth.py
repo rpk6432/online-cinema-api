@@ -7,6 +7,7 @@ from models.user import ActivationToken, PasswordResetToken, User
 
 # Registration
 
+
 async def test_register_success(client: AsyncClient) -> None:
     resp = await client.post(
         "/auth/register",
@@ -45,26 +46,20 @@ async def test_activate_success(
     )
     token = result.scalar_one()
 
-    resp = await client.post(
-        "/auth/activate", json={"token": token.token}
-    )
+    resp = await client.post("/auth/activate", json={"token": token.token})
     assert resp.status_code == 200
     assert "activated" in resp.json()["detail"].lower()
 
 
 async def test_activate_invalid_token(client: AsyncClient) -> None:
-    resp = await client.post(
-        "/auth/activate", json={"token": "invalid-token"}
-    )
+    resp = await client.post("/auth/activate", json={"token": "invalid-token"})
     assert resp.status_code == 404
 
 
 # Login
 
 
-async def test_login_success(
-    client: AsyncClient, active_user: dict[str, str]
-) -> None:
+async def test_login_success(client: AsyncClient, active_user: dict[str, str]) -> None:
     resp = await client.post(
         "/auth/login",
         json={
@@ -105,9 +100,7 @@ async def test_login_inactive_account(
 # Logout
 
 
-async def test_logout_success(
-    client: AsyncClient, active_user: dict[str, str]
-) -> None:
+async def test_logout_success(client: AsyncClient, active_user: dict[str, str]) -> None:
     tokens = await client.post(
         "/auth/login",
         json={
@@ -141,23 +134,17 @@ async def test_refresh_success(
     )
     refresh = tokens.json()["refresh_token"]
 
-    resp = await client.post(
-        "/auth/refresh", json={"refresh_token": refresh}
-    )
+    resp = await client.post("/auth/refresh", json={"refresh_token": refresh})
     assert resp.status_code == 200
     assert "access_token" in resp.json()
 
     # Old refresh token should be invalidated (rotation)
-    resp2 = await client.post(
-        "/auth/refresh", json={"refresh_token": refresh}
-    )
+    resp2 = await client.post("/auth/refresh", json={"refresh_token": refresh})
     assert resp2.status_code == 401
 
 
 async def test_refresh_invalid_token(client: AsyncClient) -> None:
-    resp = await client.post(
-        "/auth/refresh", json={"refresh_token": "invalid"}
-    )
+    resp = await client.post("/auth/refresh", json={"refresh_token": "invalid"})
     assert resp.status_code == 401
 
 
@@ -224,9 +211,7 @@ async def test_password_reset_nonexistent_email(
 async def test_password_reset_confirm_success(
     client: AsyncClient, active_user: dict[str, str], db: AsyncSession
 ) -> None:
-    await client.post(
-        "/auth/password-reset", json={"email": active_user["email"]}
-    )
+    await client.post("/auth/password-reset", json={"email": active_user["email"]})
 
     user_result = await db.execute(
         select(User).where(User.email == active_user["email"])
@@ -234,9 +219,7 @@ async def test_password_reset_confirm_success(
     user = user_result.scalar_one()
 
     token_result = await db.execute(
-        select(PasswordResetToken).where(
-            PasswordResetToken.user_id == user.id
-        )
+        select(PasswordResetToken).where(PasswordResetToken.user_id == user.id)
     )
     token = token_result.scalar_one()
 
@@ -256,9 +239,7 @@ async def test_password_reset_confirm_success(
 # Me
 
 
-async def test_me_success(
-    client: AsyncClient, auth_headers: dict[str, str]
-) -> None:
+async def test_me_success(client: AsyncClient, auth_headers: dict[str, str]) -> None:
     resp = await client.get("/auth/me", headers=auth_headers)
     assert resp.status_code == 200
     data = resp.json()

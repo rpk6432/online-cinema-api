@@ -49,9 +49,7 @@ async def db() -> AsyncGenerator[AsyncSession]:
 async def client() -> AsyncGenerator[AsyncClient]:
     app.dependency_overrides[get_db_session] = _override_get_db_session
     transport = ASGITransport(app=app)
-    async with AsyncClient(
-        transport=transport, base_url="http://test"
-    ) as ac:
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
     app.dependency_overrides.clear()
 
@@ -61,9 +59,7 @@ async def _register_user(
     email: str = "test@example.com",
     password: str = "Secret1234",
 ) -> dict[str, str]:
-    await client.post(
-        "/auth/register", json={"email": email, "password": password}
-    )
+    await client.post("/auth/register", json={"email": email, "password": password})
     return {"email": email, "password": password}
 
 
@@ -78,9 +74,7 @@ async def _login_user(
     email: str = "test@example.com",
     password: str = "Secret1234",
 ) -> dict[str, str]:
-    resp = await client.post(
-        "/auth/login", json={"email": email, "password": password}
-    )
+    resp = await client.post("/auth/login", json={"email": email, "password": password})
     data: dict[str, str] = resp.json()
     return data
 
@@ -91,9 +85,7 @@ async def registered_user(client: AsyncClient) -> dict[str, str]:
 
 
 @pytest.fixture
-async def active_user(
-    client: AsyncClient, db: AsyncSession
-) -> dict[str, str]:
+async def active_user(client: AsyncClient, db: AsyncSession) -> dict[str, str]:
     creds = await _register_user(client)
     await _activate_user(db, creds["email"])
     return creds

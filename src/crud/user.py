@@ -9,17 +9,13 @@ from models.user import User, UserGroup, UserGroupEnum
 class CRUDUser(CRUDBase[User]):
     async def get_by_email(self, db: AsyncSession, email: str) -> User | None:
         """Find user by email address, returns None if not found."""
-        result = await db.execute(
-            select(User).where(User.email == email)
-        )
+        result = await db.execute(select(User).where(User.email == email))
         return result.scalar_one_or_none()
 
     async def get_with_group(self, db: AsyncSession, user_id: int) -> User | None:
         """Load user with eagerly loaded group relationship."""
         result = await db.execute(
-            select(User)
-            .options(selectinload(User.group))
-            .where(User.id == user_id)
+            select(User).options(selectinload(User.group)).where(User.id == user_id)
         )
         return result.scalar_one_or_none()
 
