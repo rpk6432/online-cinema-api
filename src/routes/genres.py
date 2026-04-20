@@ -18,9 +18,7 @@ async def list_genres(db: DBSession) -> list[GenreResponse]:
 
 
 @router.get("/{genre_id}/movies")
-async def get_genre_movies(
-    genre_id: int, db: DBSession
-) -> list[MovieListItemResponse]:
+async def get_genre_movies(genre_id: int, db: DBSession) -> list[MovieListItemResponse]:
     """Return movies belonging to a genre."""
     genre = await genre_crud.get(db, genre_id)
     if genre is None:
@@ -60,9 +58,7 @@ async def update_genre(
 
 
 @router.delete("/{genre_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_genre(
-    genre_id: int, user: ModeratorUser, db: DBSession
-) -> None:
+async def delete_genre(genre_id: int, user: ModeratorUser, db: DBSession) -> None:
     """Delete a genre (moderator only)."""
     genre = await genre_crud.get(db, genre_id)
     if genre is None:

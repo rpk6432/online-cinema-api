@@ -45,9 +45,7 @@ async def update_star(
 
 
 @router.delete("/{star_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_star(
-    star_id: int, user: ModeratorUser, db: DBSession
-) -> None:
+async def delete_star(star_id: int, user: ModeratorUser, db: DBSession) -> None:
     """Delete a star (moderator only)."""
     star = await star_crud.get(db, star_id)
     if star is None:

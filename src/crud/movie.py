@@ -127,9 +127,7 @@ class CRUDMovie(CRUDBase[Movie]):
             movie.genres = list(genre_result.scalars().all())
 
         if star_ids:
-            star_result = await db.execute(
-                select(Star).where(Star.id.in_(star_ids))
-            )
+            star_result = await db.execute(select(Star).where(Star.id.in_(star_ids)))
             movie.stars = list(star_result.scalars().all())
 
         if director_ids:
@@ -168,9 +166,7 @@ class CRUDMovie(CRUDBase[Movie]):
             movie.genres = list(genre_result.scalars().all())
 
         if star_ids is not None:
-            star_result = await db.execute(
-                select(Star).where(Star.id.in_(star_ids))
-            )
+            star_result = await db.execute(select(Star).where(Star.id.in_(star_ids)))
             movie.stars = list(star_result.scalars().all())
 
         if director_ids is not None:
