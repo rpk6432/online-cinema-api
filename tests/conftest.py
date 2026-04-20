@@ -14,6 +14,7 @@ from database.base import Base
 from database.seed import seed_user_groups
 from database.session import get_db_session
 from main import app
+from models import movie as _movie_models  # noqa: F401
 from models import user as _user_models  # noqa: F401
 from models.user import UserGroupEnum
 
@@ -120,5 +121,31 @@ async def admin_headers(
 ) -> dict[str, str]:
     tokens = await _login_user(
         client, email=admin_user["email"], password=admin_user["password"]
+    )
+    return {"Authorization": f"Bearer {tokens['access_token']}"}
+
+
+async def _make_moderator(db: AsyncSession, email: str) -> None:
+    user = await user_crud.get_by_email(db, email)
+    assert user is not None
+    await user_crud.change_group(db, user, UserGroupEnum.MODERATOR)
+
+
+@pytest.fixture
+async def moderator_user(client: AsyncClient, db: AsyncSession) -> dict[str, str]:
+    creds = await _register_user(client, email="moderator@example.com")
+    await _activate_user(db, creds["email"])
+    await _make_moderator(db, creds["email"])
+    return creds
+
+
+@pytest.fixture
+async def moderator_headers(
+    client: AsyncClient, moderator_user: dict[str, str]
+) -> dict[str, str]:
+    tokens = await _login_user(
+        client,
+        email=moderator_user["email"],
+        password=moderator_user["password"],
     )
     return {"Authorization": f"Bearer {tokens['access_token']}"}

@@ -1,3 +1,13 @@
+from models.movie import (
+    Certification,
+    Director,
+    Genre,
+    Movie,
+    Star,
+    movie_directors,
+    movie_genres,
+    movie_stars,
+)
 from models.user import (
     ActivationToken,
     GenderEnum,
