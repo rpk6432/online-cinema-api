@@ -58,3 +58,6 @@ def require_group(
 
 
 AdminUser = Annotated[User, Depends(require_group(UserGroupEnum.ADMIN))]
+ModeratorUser = Annotated[
+    User, Depends(require_group(UserGroupEnum.MODERATOR, UserGroupEnum.ADMIN))
+]
