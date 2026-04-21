@@ -59,14 +59,12 @@ async def list_movies(
         genre_id=genre_id,
         certification_id=certification_id,
     )
-    pages = (total + per_page - 1) // per_page
 
-    return PaginatedResponse(
+    return PaginatedResponse.create(
         items=[MovieListItemResponse.model_validate(m) for m in movies],
         total=total,
         page=page,
         per_page=per_page,
-        pages=pages,
     )
 
 
