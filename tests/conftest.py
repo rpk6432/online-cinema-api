@@ -14,6 +14,7 @@ from database.base import Base
 from database.seed import seed_user_groups
 from database.session import get_db_session
 from main import app
+from models import interaction as _interaction_models  # noqa: F401
 from models import movie as _movie_models  # noqa: F401
 from models import user as _user_models  # noqa: F401
 from models.user import UserGroupEnum

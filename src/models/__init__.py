@@ -1,3 +1,11 @@
+from models.interaction import (
+    Bookmark,
+    Comment,
+    CommentLike,
+    Notification,
+    NotificationType,
+    Rating,
+)
 from models.movie import (
     Certification,
     Director,
