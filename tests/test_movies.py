@@ -1,6 +1,6 @@
 from decimal import Decimal
-from typing import Any
 
+from helpers import create_movie
 from httpx import AsyncClient
 
 
@@ -18,49 +18,22 @@ async def _create_certification(
     return int(resp.json()["id"])
 
 
-async def _create_movie(
-    client: AsyncClient,
-    headers: dict[str, str],
-    *,
-    name: str = "Test Movie",
-    genre_ids: list[int] | None = None,
-    certification_id: int | None = None,
-) -> dict[str, Any]:
-    payload: dict[str, Any] = {
-        "name": name,
-        "year": 2024,
-        "time": 120,
-        "imdb": 7.5,
-        "votes": 10000,
-        "description": "A test movie.",
-        "price": "9.99",
-    }
-    if genre_ids is not None:
-        payload["genre_ids"] = genre_ids
-    if certification_id is not None:
-        payload["certification_id"] = certification_id
-
-    resp = await client.post("/movies", json=payload, headers=headers)
-    data: dict[str, Any] = resp.json()
-    return data
-
-
-async def test_create_movie(
+async def testcreate_movie(
     client: AsyncClient, moderator_headers: dict[str, str]
 ) -> None:
-    data = await _create_movie(client, moderator_headers)
+    data = await create_movie(client, moderator_headers)
     assert data["name"] == "Test Movie"
     assert data["year"] == 2024
     assert Decimal(data["price"]) == Decimal("9.99")
 
 
-async def test_create_movie_with_relationships(
+async def testcreate_movie_with_relationships(
     client: AsyncClient, moderator_headers: dict[str, str]
 ) -> None:
     genre_id = await _create_genre(client, moderator_headers)
     cert_id = await _create_certification(client, moderator_headers)
 
-    data = await _create_movie(
+    data = await create_movie(
         client,
         moderator_headers,
         genre_ids=[genre_id],
@@ -71,7 +44,7 @@ async def test_create_movie_with_relationships(
     assert data["certification"]["name"] == "PG-13"
 
 
-async def test_create_movie_forbidden(
+async def testcreate_movie_forbidden(
     client: AsyncClient, auth_headers: dict[str, str]
 ) -> None:
     resp = await client.post(
@@ -93,7 +66,7 @@ async def test_create_movie_forbidden(
 async def test_get_movie(
     client: AsyncClient, moderator_headers: dict[str, str]
 ) -> None:
-    created = await _create_movie(client, moderator_headers)
+    created = await create_movie(client, moderator_headers)
     movie_id = created["id"]
 
     resp = await client.get(f"/movies/{movie_id}")
@@ -110,8 +83,8 @@ async def test_get_movie_not_found(client: AsyncClient) -> None:
 async def test_list_movies(
     client: AsyncClient, moderator_headers: dict[str, str]
 ) -> None:
-    await _create_movie(client, moderator_headers, name="Movie 1")
-    await _create_movie(client, moderator_headers, name="Movie 2")
+    await create_movie(client, moderator_headers, name="Movie 1")
+    await create_movie(client, moderator_headers, name="Movie 2")
 
     resp = await client.get("/movies")
     assert resp.status_code == 200
@@ -124,8 +97,8 @@ async def test_list_movies(
 async def test_list_movies_search(
     client: AsyncClient, moderator_headers: dict[str, str]
 ) -> None:
-    await _create_movie(client, moderator_headers, name="The Matrix")
-    await _create_movie(client, moderator_headers, name="Inception")
+    await create_movie(client, moderator_headers, name="The Matrix")
+    await create_movie(client, moderator_headers, name="Inception")
 
     resp = await client.get("/movies", params={"search": "matrix"})
     data = resp.json()
@@ -137,8 +110,8 @@ async def test_list_movies_filter_genre(
     client: AsyncClient, moderator_headers: dict[str, str]
 ) -> None:
     genre_id = await _create_genre(client, moderator_headers, name="Sci-Fi")
-    await _create_movie(client, moderator_headers, name="Matrix", genre_ids=[genre_id])
-    await _create_movie(client, moderator_headers, name="Drama Movie")
+    await create_movie(client, moderator_headers, name="Matrix", genre_ids=[genre_id])
+    await create_movie(client, moderator_headers, name="Drama Movie")
 
     resp = await client.get("/movies", params={"genre_id": genre_id})
     data = resp.json()
@@ -149,7 +122,7 @@ async def test_list_movies_filter_genre(
 async def test_update_movie(
     client: AsyncClient, moderator_headers: dict[str, str]
 ) -> None:
-    created = await _create_movie(client, moderator_headers)
+    created = await create_movie(client, moderator_headers)
     movie_id = created["id"]
 
     resp = await client.patch(
@@ -164,7 +137,7 @@ async def test_update_movie(
 async def test_delete_movie(
     client: AsyncClient, moderator_headers: dict[str, str]
 ) -> None:
-    created = await _create_movie(client, moderator_headers)
+    created = await create_movie(client, moderator_headers)
     movie_id = created["id"]
 
     resp = await client.delete(f"/movies/{movie_id}", headers=moderator_headers)
@@ -194,7 +167,7 @@ async def test_list_movies_pagination(
     client: AsyncClient, moderator_headers: dict[str, str]
 ) -> None:
     for i in range(3):
-        await _create_movie(client, moderator_headers, name=f"Movie {i}")
+        await create_movie(client, moderator_headers, name=f"Movie {i}")
 
     resp = await client.get("/movies", params={"page": 1, "per_page": 2})
     data = resp.json()
@@ -212,8 +185,8 @@ async def test_list_movies_pagination(
 async def test_list_movies_sort(
     client: AsyncClient, moderator_headers: dict[str, str]
 ) -> None:
-    await _create_movie(client, moderator_headers, name="Alpha")
-    await _create_movie(client, moderator_headers, name="Zeta")
+    await create_movie(client, moderator_headers, name="Alpha")
+    await create_movie(client, moderator_headers, name="Zeta")
 
     resp = await client.get("/movies", params={"sort_by": "id", "sort_order": "desc"})
     items = resp.json()["items"]

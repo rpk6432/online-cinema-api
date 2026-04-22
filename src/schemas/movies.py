@@ -32,6 +32,9 @@ class MovieResponse(MovieListItemResponse):
     description: str
     stars: list[StarResponse] = []
     directors: list[DirectorResponse] = []
+    average_rating: float | None = None
+    total_ratings: int = 0
+    total_comments: int = 0
 
 
 class MovieCreateRequest(BaseModel):

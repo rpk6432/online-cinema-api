@@ -19,6 +19,10 @@ class GenreResponse(BaseModel):
     name: str
 
 
+class GenreWithCountResponse(GenreResponse):
+    movie_count: int = 0
+
+
 class GenreCreateRequest(BaseModel):
     name: str
 

@@ -2,7 +2,9 @@ from fastapi import APIRouter, Query, status
 
 from core.dependencies import DBSession, ModeratorUser
 from core.exceptions import NotFoundError
+from crud.comment import comment_crud
 from crud.movie import movie_crud
+from crud.rating import rating_crud
 from schemas.common import PaginatedResponse
 from schemas.movies import (
     MovieCreateRequest,
@@ -59,14 +61,12 @@ async def list_movies(
         genre_id=genre_id,
         certification_id=certification_id,
     )
-    pages = (total + per_page - 1) // per_page
 
-    return PaginatedResponse(
+    return PaginatedResponse.create(
         items=[MovieListItemResponse.model_validate(m) for m in movies],
         total=total,
         page=page,
         per_page=per_page,
-        pages=pages,
     )
 
 
@@ -77,7 +77,14 @@ async def get_movie(movie_id: int, db: DBSession) -> MovieResponse:
     if movie is None:
         raise NotFoundError("Movie not found")
 
-    return MovieResponse.model_validate(movie)
+    avg, total_ratings = await rating_crud.get_movie_stats(db, movie_id)
+    total_comments = await comment_crud.count_by_movie(db, movie_id)
+
+    data = MovieResponse.model_validate(movie)
+    data.average_rating = avg
+    data.total_ratings = total_ratings
+    data.total_comments = total_comments
+    return data
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)
