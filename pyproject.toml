@@ -66,7 +66,7 @@ ignore = [
 python_version = "3.14"
 strict = true
 plugins = ["pydantic.mypy"]
-mypy_path = "src"
+mypy_path = "src:tests"
 explicit_package_bases = true
 implicit_reexport = true
 exclude = ["src/migrations/"]
@@ -74,8 +74,10 @@ exclude = ["src/migrations/"]
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
-pythonpath = ["src"]
+pythonpath = ["src", "tests"]
 filterwarnings = ["ignore::DeprecationWarning"]
+
+
 
 [build-system]
 requires = ["poetry-core"]
