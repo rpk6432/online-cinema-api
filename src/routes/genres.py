@@ -4,17 +4,20 @@ from core.dependencies import DBSession, ModeratorUser
 from core.exceptions import AlreadyExistsError, NotFoundError
 from crud.genre import genre_crud
 from crud.movie import movie_crud
-from schemas.catalogs import GenreCreateRequest, GenreResponse
+from schemas.catalogs import GenreCreateRequest, GenreResponse, GenreWithCountResponse
 from schemas.movies import MovieListItemResponse
 
 router = APIRouter(prefix="/genres", tags=["Genres"])
 
 
 @router.get("")
-async def list_genres(db: DBSession) -> list[GenreResponse]:
-    """Return all available genres."""
-    genres = await genre_crud.get_multi(db, limit=100)
-    return [GenreResponse.model_validate(g) for g in genres]
+async def list_genres(db: DBSession) -> list[GenreWithCountResponse]:
+    """Return all available genres with movie counts."""
+    rows = await genre_crud.get_all_with_movie_count(db)
+    return [
+        GenreWithCountResponse(id=genre.id, name=genre.name, movie_count=count)
+        for genre, count in rows
+    ]
 
 
 @router.get("/{genre_id}/movies")
