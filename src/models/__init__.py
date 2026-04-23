@@ -17,6 +17,7 @@ from models.movie import (
     movie_genres,
     movie_stars,
 )
+from models.order import Order, OrderItem, OrderStatusEnum
 from models.user import (
     ActivationToken,
     GenderEnum,
