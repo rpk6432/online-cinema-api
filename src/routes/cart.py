@@ -6,6 +6,7 @@ from core.dependencies import ActiveUser, DBSession
 from core.exceptions import AlreadyExistsError, NotFoundError
 from crud.cart import cart_crud
 from crud.movie import movie_crud
+from crud.order import order_crud
 from schemas.cart import AddToCartRequest, CartItemResponse, CartResponse
 
 router = APIRouter(prefix="/cart", tags=["Cart"])
@@ -36,8 +37,11 @@ async def add_item(
     if movie is None:
         raise NotFoundError("Movie not found")
 
-    if await cart_crud.is_movie_purchased(db, user.id, body.movie_id):
+    order_status = await order_crud.get_movie_order_status(db, user.id, body.movie_id)
+    if order_status == "PAID":
         raise AlreadyExistsError("Movie already purchased")
+    if order_status == "PENDING":
+        raise AlreadyExistsError("Movie is in a pending order. Cancel the order first.")
 
     cart = await cart_crud.get_or_create_cart(db, user.id)
 
