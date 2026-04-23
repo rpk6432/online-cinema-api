@@ -1,3 +1,4 @@
+from models.cart import Cart, CartItem
 from models.interaction import (
     Bookmark,
     Comment,

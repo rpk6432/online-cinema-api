@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from routes.auth import router as auth_router
 from routes.bookmarks import router as bookmarks_router
+from routes.cart import router as cart_router
 from routes.certifications import router as certifications_router
 from routes.directors import router as directors_router
 from routes.genres import router as genres_router
@@ -19,6 +20,7 @@ router.include_router(users_router)
 router.include_router(movies_router)
 router.include_router(interactions_router)
 router.include_router(bookmarks_router)
+router.include_router(cart_router)
 router.include_router(notifications_router)
 router.include_router(genres_router)
 router.include_router(stars_router)
