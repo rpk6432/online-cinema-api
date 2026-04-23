@@ -64,15 +64,33 @@ async def test_add_item_already_purchased(
 ) -> None:
     movie = await create_movie(client, moderator_headers)
     with patch(
-        "routes.cart.cart_crud.is_movie_purchased",
+        "routes.cart.order_crud.get_movie_order_status",
         new_callable=AsyncMock,
-        return_value=True,
+        return_value="PAID",
     ):
         resp = await client.post(
             "/cart/items", json={"movie_id": movie["id"]}, headers=auth_headers
         )
     assert resp.status_code == 409
     assert "purchased" in resp.json()["detail"].lower()
+
+
+async def test_add_item_pending_order(
+    client: AsyncClient,
+    moderator_headers: dict[str, str],
+    auth_headers: dict[str, str],
+) -> None:
+    movie = await create_movie(client, moderator_headers)
+    with patch(
+        "routes.cart.order_crud.get_movie_order_status",
+        new_callable=AsyncMock,
+        return_value="PENDING",
+    ):
+        resp = await client.post(
+            "/cart/items", json={"movie_id": movie["id"]}, headers=auth_headers
+        )
+    assert resp.status_code == 409
+    assert "pending" in resp.json()["detail"].lower()
 
 
 async def test_get_cart_with_items(

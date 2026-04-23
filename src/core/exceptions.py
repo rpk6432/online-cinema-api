@@ -38,6 +38,13 @@ class ForbiddenError(AppError):
     detail = "Forbidden"
 
 
+class BadRequestError(AppError):
+    """Business logic constraint violation."""
+
+    status_code = 400
+    detail = "Bad request"
+
+
 class ValidationError(AppError):
     """Business logic validation failed."""
 

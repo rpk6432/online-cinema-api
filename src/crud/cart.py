@@ -86,14 +86,5 @@ class CRUDCart:
         await db.execute(delete(CartItem).where(CartItem.cart_id == cart.id))
         await db.commit()
 
-    async def is_movie_purchased(
-        self, db: AsyncSession, user_id: int, movie_id: int
-    ) -> bool:
-        """Check if the user has already purchased this movie.
-
-        TODO: implement when order tracking is available.
-        """
-        return False
-
 
 cart_crud = CRUDCart()
