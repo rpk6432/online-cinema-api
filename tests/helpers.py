@@ -8,6 +8,7 @@ async def create_movie(
     headers: dict[str, str],
     *,
     name: str = "Test Movie",
+    price: str = "9.99",
     genre_ids: list[int] | None = None,
     certification_id: int | None = None,
 ) -> dict[str, Any]:
@@ -18,7 +19,7 @@ async def create_movie(
         "imdb": 7.5,
         "votes": 10000,
         "description": "A test movie.",
-        "price": "9.99",
+        "price": price,
     }
     if genre_ids is not None:
         payload["genre_ids"] = genre_ids
