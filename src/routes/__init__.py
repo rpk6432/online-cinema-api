@@ -10,6 +10,7 @@ from routes.interactions import router as interactions_router
 from routes.movies import router as movies_router
 from routes.notifications import router as notifications_router
 from routes.orders import router as orders_router
+from routes.payments import router as payments_router
 from routes.profiles import router as profiles_router
 from routes.stars import router as stars_router
 from routes.users import router as users_router
@@ -23,6 +24,7 @@ router.include_router(interactions_router)
 router.include_router(bookmarks_router)
 router.include_router(cart_router)
 router.include_router(orders_router)
+router.include_router(payments_router)
 router.include_router(notifications_router)
 router.include_router(genres_router)
 router.include_router(stars_router)
