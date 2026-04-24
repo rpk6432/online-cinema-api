@@ -53,6 +53,11 @@ class CRUDOrder:
         )
         return result.scalar_one_or_none()
 
+    async def get_order_by_id(self, db: AsyncSession, order_id: int) -> Order | None:
+        """Return an order by ID without ownership check."""
+        result = await db.execute(select(Order).where(Order.id == order_id))
+        return result.scalar_one_or_none()
+
     async def get_user_orders(
         self,
         db: AsyncSession,
@@ -87,6 +92,11 @@ class CRUDOrder:
     async def cancel_order(self, db: AsyncSession, order: Order) -> None:
         """Cancel a pending order."""
         order.status = OrderStatusEnum.CANCELED
+        await db.commit()
+
+    async def mark_order_paid(self, db: AsyncSession, order: Order) -> None:
+        """Mark an order as paid."""
+        order.status = OrderStatusEnum.PAID
         await db.commit()
 
     async def get_movie_order_status(
