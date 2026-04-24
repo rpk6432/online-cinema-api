@@ -29,3 +29,18 @@ async def create_movie(
     resp = await client.post("/movies", json=payload, headers=headers)
     data: dict[str, Any] = resp.json()
     return data
+
+
+async def create_pending_order(
+    client: AsyncClient,
+    moderator_headers: dict[str, str],
+    auth_headers: dict[str, str],
+) -> dict[str, Any]:
+    """Create a movie, add to cart, and create a pending order."""
+    movie = await create_movie(client, moderator_headers)
+    await client.post(
+        "/cart/items", json={"movie_id": movie["id"]}, headers=auth_headers
+    )
+    resp = await client.post("/orders", headers=auth_headers)
+    data: dict[str, Any] = resp.json()
+    return data
