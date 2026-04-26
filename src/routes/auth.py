@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+from kombu.exceptions import OperationalError
 from loguru import logger
 
 from core.dependencies import ActiveUser, CurrentUser, DBSession
@@ -39,6 +40,7 @@ from schemas.auth import (
 )
 from schemas.common import MessageResponse
 from schemas.users import UserResponse
+from tasks.email import send_activation_email, send_password_reset_email
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -59,7 +61,10 @@ async def register(body: RegisterRequest, db: DBSession) -> MessageResponse:
     user = await user_crud.create_user(db, body.email, hashed)
 
     token = await create_activation_token(db, user.id)
-    logger.info("Activation token for {}: {}", user.email, token.token)
+    try:
+        send_activation_email.delay(user.email, token.token)
+    except OperationalError:
+        logger.warning("Failed to queue activation email for {}", user.email)
 
     return MessageResponse(detail="Check your email to activate your account")
 
@@ -96,7 +101,10 @@ async def resend_activation(
     user = await user_crud.get_by_email(db, body.email)
     if user is not None and not user.is_active:
         token = await create_activation_token(db, user.id)
-        logger.info("Activation token for {}: {}", user.email, token.token)
+        try:
+            send_activation_email.delay(user.email, token.token)
+        except OperationalError:
+            logger.warning("Failed to queue activation email for {}", user.email)
 
     return MessageResponse(
         detail="If this email is registered, an activation link was sent"
@@ -188,7 +196,10 @@ async def password_reset(body: PasswordResetRequest, db: DBSession) -> MessageRe
     user = await user_crud.get_by_email(db, body.email)
     if user is not None:
         token = await create_password_reset_token(db, user.id)
-        logger.info("Password reset token for {}: {}", user.email, token.token)
+        try:
+            send_password_reset_email.delay(user.email, token.token)
+        except OperationalError:
+            logger.warning("Failed to queue password reset email for {}", user.email)
 
     return MessageResponse(
         detail="If this email is registered, reset instructions were sent"

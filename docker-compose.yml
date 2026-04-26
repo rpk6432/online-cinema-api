@@ -51,6 +51,32 @@ services:
     volumes:
       - minio_data:/data
 
+  celery-worker:
+    build: .
+    command: celery -A celery_app worker --loglevel=info
+    env_file:
+      - .env
+    environment:
+      - PYTHONPATH=src
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  celery-beat:
+    build: .
+    command: celery -A celery_app beat --loglevel=info -s /data/celerybeat-schedule
+    env_file:
+      - .env
+    environment:
+      - PYTHONPATH=src
+    volumes:
+      - celery_beat_data:/data
+    depends_on:
+      redis:
+        condition: service_healthy
+
   mailpit:
     image: axllent/mailpit
     ports:
@@ -60,3 +86,4 @@ services:
 volumes:
   postgres_data:
   minio_data:
+  celery_beat_data:

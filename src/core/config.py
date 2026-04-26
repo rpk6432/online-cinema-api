@@ -42,6 +42,7 @@ class Settings(BaseSettings):
     smtp_host: str = "localhost"
     smtp_port: int = 1025
     email_from: str = "noreply@cinema.com"
+    frontend_url: str = "http://localhost:3000"
 
     # Logging
     log_level: str = "DEBUG"

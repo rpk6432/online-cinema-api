@@ -1,7 +1,9 @@
 from collections.abc import AsyncGenerator
+from unittest.mock import patch
 
 import pytest
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,
@@ -34,7 +36,8 @@ async def _override_get_db_session() -> AsyncGenerator[AsyncSession]:
 @pytest.fixture(autouse=True)
 async def setup_tables() -> AsyncGenerator[None]:
     async with test_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
+        await conn.execute(text("DROP SCHEMA public CASCADE"))
+        await conn.execute(text("CREATE SCHEMA public"))
         await conn.run_sync(Base.metadata.create_all)
     async with test_session_factory() as session:
         await seed_user_groups(session)
@@ -52,8 +55,12 @@ async def db() -> AsyncGenerator[AsyncSession]:
 async def client() -> AsyncGenerator[AsyncClient]:
     app.dependency_overrides[get_db_session] = _override_get_db_session
     transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        yield ac
+    with (
+        patch("routes.auth.send_activation_email"),
+        patch("routes.auth.send_password_reset_email"),
+    ):
+        async with AsyncClient(transport=transport, base_url="http://test") as ac:
+            yield ac
     app.dependency_overrides.clear()
 
 
