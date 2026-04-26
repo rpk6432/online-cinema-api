@@ -125,7 +125,7 @@ class CRUDComment(CRUDBase[Comment]):
                 CommentLike.comment_id == comment_id,
             )
         )
-        existing = result.scalar_one_or_none()
+        existing: CommentLike | None = result.scalar_one_or_none()
 
         if existing is None:
             comment_like = CommentLike(

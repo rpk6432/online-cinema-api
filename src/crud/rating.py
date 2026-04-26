@@ -12,7 +12,7 @@ class CRUDRating:
         result = await db.execute(
             select(Rating).where(Rating.user_id == user_id, Rating.movie_id == movie_id)
         )
-        existing = result.scalar_one_or_none()
+        existing: Rating | None = result.scalar_one_or_none()
 
         if existing is None:
             rating = Rating(user_id=user_id, movie_id=movie_id, score=score)
