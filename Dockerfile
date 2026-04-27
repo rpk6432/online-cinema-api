@@ -18,6 +18,10 @@ WORKDIR /app
 COPY --from=builder /usr/local/lib/python3.14/site-packages /usr/local/lib/python3.14/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
 
+COPY alembic.ini ./
+COPY entrypoint.sh ./
+RUN chmod +x entrypoint.sh
+
 COPY src/ ./src/
 
 ENV PYTHONPATH=src
@@ -26,4 +30,5 @@ ENV PYTHONUNBUFFERED=1
 
 EXPOSE 8000
 
+ENTRYPOINT ["./entrypoint.sh"]
 CMD ["gunicorn", "main:app", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "-b", "0.0.0.0:8000"]

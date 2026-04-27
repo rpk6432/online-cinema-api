@@ -7,6 +7,7 @@ services:
       - .env
     environment:
       - PYTHONPATH=src
+      - RUN_MIGRATIONS=true
     depends_on:
       db:
         condition: service_healthy
