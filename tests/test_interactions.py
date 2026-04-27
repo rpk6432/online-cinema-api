@@ -284,7 +284,7 @@ async def test_delete_comment_not_owner(
     comment_id = comment.json()["id"]
 
     resp = await client.delete(f"/comments/{comment_id}", headers=auth_headers)
-    assert resp.status_code == 422
+    assert resp.status_code == 403
 
 
 # Comment Likes

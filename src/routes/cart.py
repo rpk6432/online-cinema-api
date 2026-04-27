@@ -7,6 +7,7 @@ from core.exceptions import AlreadyExistsError, NotFoundError
 from crud.cart import cart_crud
 from crud.movie import movie_crud
 from crud.order import order_crud
+from models.order import OrderStatusEnum
 from schemas.cart import AddToCartRequest, CartItemResponse, CartResponse
 
 router = APIRouter(prefix="/cart", tags=["Cart"])
@@ -38,9 +39,9 @@ async def add_item(
         raise NotFoundError("Movie not found")
 
     order_status = await order_crud.get_movie_order_status(db, user.id, body.movie_id)
-    if order_status == "PAID":
+    if order_status == OrderStatusEnum.PAID:
         raise AlreadyExistsError("Movie already purchased")
-    if order_status == "PENDING":
+    if order_status == OrderStatusEnum.PENDING:
         raise AlreadyExistsError("Movie is in a pending order. Cancel the order first.")
 
     cart = await cart_crud.get_or_create_cart(db, user.id)

@@ -128,11 +128,11 @@ async def login(body: LoginRequest, db: DBSession) -> TokenResponse:
         raise ForbiddenError("Account is not activated")
 
     access = create_access_token(user.id)
-    refresh = create_refresh_token(user.id)
+    refresh_jwt = create_refresh_token(user.id)
 
-    await create_refresh_token_record(db, user.id, refresh)
+    await create_refresh_token_record(db, user.id, refresh_jwt)
 
-    return TokenResponse(access_token=access, refresh_token=refresh)
+    return TokenResponse(access_token=access, refresh_token=refresh_jwt)
 
 
 @router.post(

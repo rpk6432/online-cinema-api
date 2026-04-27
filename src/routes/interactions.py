@@ -2,7 +2,7 @@ from fastapi import APIRouter, Query, status
 from sqlalchemy.exc import IntegrityError
 
 from core.dependencies import ActiveUser, DBSession
-from core.exceptions import NotFoundError, ValidationError
+from core.exceptions import ForbiddenError, NotFoundError, ValidationError
 from crud.comment import comment_crud
 from crud.rating import rating_crud
 from schemas.common import MessageResponse, PaginatedResponse
@@ -106,7 +106,7 @@ async def delete_comment(comment_id: int, user: ActiveUser, db: DBSession) -> No
     if comment is None:
         raise NotFoundError("Comment not found")
     if comment.user_id != user.id:
-        raise ValidationError("Cannot delete another user's comment")
+        raise ForbiddenError("Cannot delete another user's comment")
     await comment_crud.delete(db, comment)
 
 

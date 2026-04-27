@@ -20,12 +20,12 @@ bcrypt = "^5.0"
 pydantic-settings = "^2.7"
 email-validator = "^2.2"
 httpx = "^0.28"
-aiosmtplib = "^5.1"
+
 aioboto3 = "^15.5"
 celery = {extras = ["redis"], version = "^5.6"}
 stripe = "^15.0"
 jinja2 = "^3.1"
-python-multipart = "^0.0.22"
+python-multipart = "^0.0.26"
 sqladmin = "^0.20"
 loguru = "^0.7"
 psycopg2-binary = "^2.9.12"
@@ -72,6 +72,10 @@ mypy_path = "src:tests"
 explicit_package_bases = true
 implicit_reexport = true
 exclude = ["src/migrations/"]
+
+[[tool.mypy.overrides]]
+module = "aioboto3.*"
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
