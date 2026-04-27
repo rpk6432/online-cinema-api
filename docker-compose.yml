@@ -84,6 +84,30 @@ services:
       - "1025:1025"
       - "8025:8025"
 
+  minio-init:
+    image: minio/mc
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 minioadmin minioadmin;
+      mc mb local/cinema-avatars --ignore-existing;
+      "
+    restart: "no"
+
+  flower:
+    build: .
+    command: celery -A celery_app flower --port=5555
+    env_file:
+      - .env
+    environment:
+      - PYTHONPATH=src
+    ports:
+      - "5555:5555"
+    depends_on:
+      redis:
+        condition: service_healthy
+
 volumes:
   postgres_data:
   minio_data:
