@@ -27,7 +27,7 @@ async def create_order(user: ActiveUser, db: DBSession) -> OrderResponse:
 async def list_orders(
     user: ActiveUser,
     db: DBSession,
-    status_filter: str | None = Query(None, alias="status"),
+    status_filter: OrderStatusEnum | None = Query(None, alias="status"),
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
 ) -> PaginatedResponse[OrderListItemResponse]:

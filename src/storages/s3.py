@@ -41,4 +41,4 @@ async def delete_avatar(key: str) -> None:
 
 def get_avatar_url(key: str) -> str:
     """Build public URL for an avatar stored in MinIO."""
-    return f"{settings.s3_endpoint_url}/{settings.s3_bucket_name}/{key}"
+    return f"{settings.s3_public_url}/{settings.s3_bucket_name}/{key}"

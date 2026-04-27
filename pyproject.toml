@@ -60,6 +60,7 @@ select = [
 ]
 ignore = [
     "S101",  # allow assert in tests
+    "B008",  # allow Query/Depends/Body in argument defaults (FastAPI pattern)
 ]
 
 
