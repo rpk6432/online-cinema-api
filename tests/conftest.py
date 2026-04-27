@@ -56,6 +56,7 @@ async def client() -> AsyncGenerator[AsyncClient]:
     with (
         patch("routes.auth.send_activation_email"),
         patch("routes.auth.send_password_reset_email"),
+        patch("routes.payments.send_order_confirmation_email"),
     ):
         async with AsyncClient(transport=transport, base_url="http://test") as ac:
             yield ac
