@@ -47,5 +47,8 @@ class Settings(BaseSettings):
     # Logging
     log_level: str = "DEBUG"
 
+    # Admin
+    admin_secret_key: str = "change-me-admin-secret"
+
 
 settings = Settings()

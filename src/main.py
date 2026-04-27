@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 from loguru import logger
 from sqlalchemy.exc import IntegrityError
 
+from admin import setup_admin
 from core import AppError, settings, setup_logging
 from database.seed import seed_user_groups
 from database.session import async_session
@@ -29,6 +30,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+setup_admin(app)
 app.include_router(router)
 
 
