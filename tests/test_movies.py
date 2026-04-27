@@ -2,6 +2,9 @@ from decimal import Decimal
 
 from helpers import create_movie
 from httpx import AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from crud.order import order_crud
 
 
 async def _create_genre(
@@ -192,3 +195,26 @@ async def test_list_movies_sort(
     items = resp.json()["items"]
     assert items[0]["name"] == "Zeta"
     assert items[1]["name"] == "Alpha"
+
+
+async def test_delete_purchased_movie_forbidden(
+    client: AsyncClient,
+    moderator_headers: dict[str, str],
+    auth_headers: dict[str, str],
+    db: AsyncSession,
+) -> None:
+    movie = await create_movie(client, moderator_headers)
+    await client.post(
+        "/cart/items", json={"movie_id": movie["id"]}, headers=auth_headers
+    )
+    order_resp = await client.post("/orders", headers=auth_headers)
+    order_id = order_resp.json()["id"]
+
+    # Mark order as paid directly in DB
+    order = await order_crud.get_order_by_id(db, order_id)
+    assert order is not None
+    await order_crud.mark_order_paid(db, order)
+
+    resp = await client.delete(f"/movies/{movie['id']}", headers=moderator_headers)
+    assert resp.status_code == 400
+    assert "purchased" in resp.json()["detail"].lower()

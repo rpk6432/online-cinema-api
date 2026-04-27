@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Query, status
 
 from core.dependencies import DBSession, ModeratorUser
-from core.exceptions import NotFoundError
+from core.exceptions import BadRequestError, NotFoundError
 from crud.comment import comment_crud
 from crud.movie import movie_crud
+from crud.order import order_crud
 from crud.rating import rating_crud
 from schemas.common import PaginatedResponse
 from schemas.movies import (
@@ -119,5 +120,8 @@ async def delete_movie(movie_id: int, user: ModeratorUser, db: DBSession) -> Non
     movie = await movie_crud.get(db, movie_id)
     if movie is None:
         raise NotFoundError("Movie not found")
+
+    if await order_crud.is_movie_purchased(db, movie_id):
+        raise BadRequestError("Cannot delete a movie that has been purchased")
 
     await movie_crud.delete(db, movie)
