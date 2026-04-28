@@ -59,4 +59,4 @@ jobs:
         run: pip install poetry
       - name: Install dependencies
         run: poetry install --no-interaction
-      - run: poetry run pytest tests/ -v
+      - run: poetry run pytest tests/ -v --cov --cov-report=term-missing

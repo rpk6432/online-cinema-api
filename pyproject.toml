@@ -36,6 +36,7 @@ slowapi = "^0.1.9"
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3"
 pytest-asyncio = "^0.25"
+pytest-cov = "^6.0"
 ruff = "^0.15"
 mypy = "^1.13"
 pre-commit = "^4.0"
@@ -88,7 +89,19 @@ testpaths = ["tests"]
 pythonpath = ["src", "tests"]
 filterwarnings = ["ignore::DeprecationWarning"]
 
+[tool.coverage.run]
+source = ["src"]
+branch = true
+omit = ["src/migrations/*"]
 
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+]
+fail_under = 80
+show_missing = true
+skip_empty = true
 
 [build-system]
 requires = ["poetry-core"]
