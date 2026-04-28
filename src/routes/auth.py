@@ -1,7 +1,8 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from kombu.exceptions import OperationalError
 from loguru import logger
 
+from core.config import settings
 from core.dependencies import ActiveUser, CurrentUser, DBSession
 from core.exceptions import (
     AlreadyExistsError,
@@ -9,6 +10,7 @@ from core.exceptions import (
     NotFoundError,
     UnauthorizedError,
 )
+from core.rate_limit import limiter
 from core.security import (
     create_access_token,
     create_refresh_token,
@@ -51,7 +53,10 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
     summary="Register a new user",
     responses={409: {"description": "Email already registered"}},
 )
-async def register(body: RegisterRequest, db: DBSession) -> MessageResponse:
+@limiter.limit(settings.rate_limit)
+async def register(
+    request: Request, body: RegisterRequest, db: DBSession
+) -> MessageResponse:
     """Create a new user account and send an activation email."""
     existing = await user_crud.get_by_email(db, body.email)
     if existing:
@@ -94,8 +99,9 @@ async def activate(body: ActivateRequest, db: DBSession) -> MessageResponse:
     "/resend-activation",
     summary="Resend activation email",
 )
+@limiter.limit(settings.rate_limit)
 async def resend_activation(
-    body: ResendActivationRequest, db: DBSession
+    request: Request, body: ResendActivationRequest, db: DBSession
 ) -> MessageResponse:
     """Resend activation email if the account exists and is not yet active."""
     user = await user_crud.get_by_email(db, body.email)
@@ -119,7 +125,8 @@ async def resend_activation(
         403: {"description": "Account is not activated"},
     },
 )
-async def login(body: LoginRequest, db: DBSession) -> TokenResponse:
+@limiter.limit(settings.rate_limit)
+async def login(request: Request, body: LoginRequest, db: DBSession) -> TokenResponse:
     """Authenticate with email and password, receive a JWT token pair."""
     user = await user_crud.get_by_email(db, body.email)
     if user is None or not verify_password(body.password, user.hashed_password):
@@ -191,7 +198,10 @@ async def password_change(
     "/password-reset",
     summary="Request password reset",
 )
-async def password_reset(body: PasswordResetRequest, db: DBSession) -> MessageResponse:
+@limiter.limit(settings.rate_limit)
+async def password_reset(
+    request: Request, body: PasswordResetRequest, db: DBSession
+) -> MessageResponse:
     """Send a password reset email if the account exists."""
     user = await user_crud.get_by_email(db, body.email)
     if user is not None:

@@ -52,6 +52,7 @@ async def db() -> AsyncGenerator[AsyncSession]:
 @pytest.fixture
 async def client() -> AsyncGenerator[AsyncClient]:
     app.dependency_overrides[get_db_session] = _override_get_db_session
+    app.state.limiter.enabled = False
     transport = ASGITransport(app=app)
     with (
         patch("routes.auth.send_activation_email"),
@@ -60,6 +61,7 @@ async def client() -> AsyncGenerator[AsyncClient]:
     ):
         async with AsyncClient(transport=transport, base_url="http://test") as ac:
             yield ac
+    app.state.limiter.enabled = True
     app.dependency_overrides.clear()
 
 

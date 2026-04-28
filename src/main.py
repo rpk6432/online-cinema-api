@@ -2,12 +2,15 @@ from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from loguru import logger
+from slowapi.middleware import SlowAPIMiddleware
 from sqlalchemy.exc import IntegrityError
 
 from admin import setup_admin
 from core import AppError, settings, setup_logging
+from core.rate_limit import limiter
 from database.seed import seed_user_groups
 from database.session import async_session
 from routes import router
@@ -25,9 +28,18 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None]:
 
 app = FastAPI(
     title=settings.app_title,
-    version=settings.app_version,
     debug=settings.debug,
     lifespan=lifespan,
+)
+
+app.state.limiter = limiter
+app.add_middleware(SlowAPIMiddleware)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 setup_admin(app)
