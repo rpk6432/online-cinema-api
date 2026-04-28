@@ -8,14 +8,23 @@ from schemas.catalogs import CertificationCreateRequest, CertificationResponse
 router = APIRouter(prefix="/certifications", tags=["Certifications"])
 
 
-@router.get("")
+@router.get("", summary="List certifications")
 async def list_certifications(db: DBSession) -> list[CertificationResponse]:
     """Return all available certifications."""
     items = await certification_crud.get_multi(db, limit=100)
     return [CertificationResponse.model_validate(c) for c in items]
 
 
-@router.post("", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    status_code=status.HTTP_201_CREATED,
+    summary="Create certification",
+    responses={
+        401: {"description": "Not authenticated"},
+        403: {"description": "Insufficient permissions"},
+        409: {"description": "Certification already exists"},
+    },
+)
 async def create_certification(
     body: CertificationCreateRequest,
     user: ModeratorUser,

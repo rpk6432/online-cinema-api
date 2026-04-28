@@ -10,7 +10,11 @@ from schemas.interactions import BookmarkResponse, BookmarkWithMovieResponse
 router = APIRouter(prefix="/bookmarks", tags=["Bookmarks"])
 
 
-@router.get("")
+@router.get(
+    "",
+    summary="List bookmarks",
+    responses={401: {"description": "Not authenticated"}},
+)
 async def list_bookmarks(
     user: ActiveUser,
     db: DBSession,
@@ -40,7 +44,16 @@ async def list_bookmarks(
     )
 
 
-@router.post("/movies/{movie_id}", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/movies/{movie_id}",
+    status_code=status.HTTP_201_CREATED,
+    summary="Add bookmark",
+    responses={
+        401: {"description": "Not authenticated"},
+        404: {"description": "Movie not found"},
+        409: {"description": "Movie already bookmarked"},
+    },
+)
 async def add_bookmark(
     movie_id: int, user: ActiveUser, db: DBSession
 ) -> BookmarkResponse:
@@ -54,7 +67,15 @@ async def add_bookmark(
     return BookmarkResponse.model_validate(bookmark)
 
 
-@router.delete("/movies/{movie_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/movies/{movie_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Remove bookmark",
+    responses={
+        401: {"description": "Not authenticated"},
+        404: {"description": "Bookmark not found"},
+    },
+)
 async def remove_bookmark(movie_id: int, user: ActiveUser, db: DBSession) -> None:
     """Remove a movie from bookmarks."""
     if not await bookmark_crud.remove(db, user.id, movie_id):

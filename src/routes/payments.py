@@ -16,7 +16,16 @@ from tasks.email import send_order_confirmation_email
 router = APIRouter(prefix="/payments", tags=["Payments"])
 
 
-@router.post("/{order_id}/checkout", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/{order_id}/checkout",
+    status_code=status.HTTP_201_CREATED,
+    summary="Checkout",
+    responses={
+        400: {"description": "Only pending orders can be paid"},
+        401: {"description": "Not authenticated"},
+        404: {"description": "Order not found"},
+    },
+)
 async def checkout(order_id: int, user: ActiveUser, db: DBSession) -> CheckoutResponse:
     """Create a Stripe Checkout Session for an order."""
     order = await order_crud.get_order(db, order_id, user.id)
@@ -35,7 +44,11 @@ async def checkout(order_id: int, user: ActiveUser, db: DBSession) -> CheckoutRe
     return CheckoutResponse(checkout_url=session.url or "", payment_id=payment.id)
 
 
-@router.post("/webhook")
+@router.post(
+    "/webhook",
+    summary="Stripe webhook",
+    responses={400: {"description": "Invalid signature"}},
+)
 async def webhook(request: Request, db: DBSession) -> MessageResponse:
     """Handle Stripe webhook events."""
     payload = await request.body()
@@ -71,7 +84,11 @@ async def webhook(request: Request, db: DBSession) -> MessageResponse:
     return MessageResponse(detail="Webhook processed")
 
 
-@router.get("")
+@router.get(
+    "",
+    summary="List payments",
+    responses={401: {"description": "Not authenticated"}},
+)
 async def list_payments(
     user: ActiveUser,
     db: DBSession,

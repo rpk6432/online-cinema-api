@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, status
 from kombu.exceptions import OperationalError
 from loguru import logger
 
@@ -49,7 +49,7 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 
 @router.post(
     "/register",
-    status_code=201,
+    status_code=status.HTTP_201_CREATED,
     summary="Register a new user",
     responses={409: {"description": "Email already registered"}},
 )
@@ -77,7 +77,7 @@ async def register(
 @router.post(
     "/activate",
     summary="Activate user account",
-    responses={404: {"description": "Invalid or expired token"}},
+    responses={404: {"description": "Invalid or expired activation token"}},
 )
 async def activate(body: ActivateRequest, db: DBSession) -> MessageResponse:
     """Activate a user account using a one-time activation token."""
@@ -121,7 +121,7 @@ async def resend_activation(
     "/login",
     summary="Log in",
     responses={
-        401: {"description": "Invalid credentials"},
+        401: {"description": "Invalid email or password"},
         403: {"description": "Account is not activated"},
     },
 )
@@ -219,7 +219,7 @@ async def password_reset(
 @router.post(
     "/password-reset/confirm",
     summary="Confirm password reset",
-    responses={404: {"description": "Invalid or expired token"}},
+    responses={404: {"description": "Invalid or expired reset token"}},
 )
 async def password_reset_confirm(
     body: PasswordResetConfirmRequest, db: DBSession

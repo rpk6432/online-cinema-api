@@ -13,7 +13,11 @@ from schemas.cart import AddToCartRequest, CartItemResponse, CartResponse
 router = APIRouter(prefix="/cart", tags=["Cart"])
 
 
-@router.get("")
+@router.get(
+    "",
+    summary="Get cart",
+    responses={401: {"description": "Not authenticated"}},
+)
 async def get_cart(user: ActiveUser, db: DBSession) -> CartResponse:
     """Return the current user's cart."""
     cart = await cart_crud.get_cart(db, user.id)
@@ -29,7 +33,16 @@ async def get_cart(user: ActiveUser, db: DBSession) -> CartResponse:
     )
 
 
-@router.post("/items", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/items",
+    status_code=status.HTTP_201_CREATED,
+    summary="Add item to cart",
+    responses={
+        401: {"description": "Not authenticated"},
+        404: {"description": "Movie not found"},
+        409: {"description": "Movie already in cart or purchased"},
+    },
+)
 async def add_item(
     body: AddToCartRequest, user: ActiveUser, db: DBSession
 ) -> CartItemResponse:
@@ -54,7 +67,15 @@ async def add_item(
     return CartItemResponse.model_validate(item)
 
 
-@router.delete("/items/{movie_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/items/{movie_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Remove item from cart",
+    responses={
+        401: {"description": "Not authenticated"},
+        404: {"description": "Movie not in cart"},
+    },
+)
 async def remove_item(movie_id: int, user: ActiveUser, db: DBSession) -> None:
     """Remove a movie from the cart."""
     removed = await cart_crud.remove_item(db, user.id, movie_id)
@@ -62,7 +83,12 @@ async def remove_item(movie_id: int, user: ActiveUser, db: DBSession) -> None:
         raise NotFoundError("Movie not in cart")
 
 
-@router.delete("/clear", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/clear",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Clear cart",
+    responses={401: {"description": "Not authenticated"}},
+)
 async def clear_cart(user: ActiveUser, db: DBSession) -> None:
     """Remove all items from the cart."""
     await cart_crud.clear_cart(db, user.id)

@@ -17,7 +17,7 @@ from schemas.movies import (
 router = APIRouter(prefix="/movies", tags=["Movies"])
 
 
-@router.get("")
+@router.get("", summary="List movies")
 async def list_movies(
     db: DBSession,
     search: str | None = None,
@@ -71,7 +71,11 @@ async def list_movies(
     )
 
 
-@router.get("/{movie_id}")
+@router.get(
+    "/{movie_id}",
+    summary="Get movie",
+    responses={404: {"description": "Movie not found"}},
+)
 async def get_movie(movie_id: int, db: DBSession) -> MovieResponse:
     """Return full details of a movie by ID."""
     movie = await movie_crud.get_detail(db, movie_id)
@@ -88,7 +92,15 @@ async def get_movie(movie_id: int, db: DBSession) -> MovieResponse:
     return data
 
 
-@router.post("", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    status_code=status.HTTP_201_CREATED,
+    summary="Create movie",
+    responses={
+        401: {"description": "Not authenticated"},
+        403: {"description": "Insufficient permissions"},
+    },
+)
 async def create_movie(
     body: MovieCreateRequest, user: ModeratorUser, db: DBSession
 ) -> MovieResponse:
@@ -97,7 +109,15 @@ async def create_movie(
     return MovieResponse.model_validate(movie)
 
 
-@router.patch("/{movie_id}")
+@router.patch(
+    "/{movie_id}",
+    summary="Update movie",
+    responses={
+        401: {"description": "Not authenticated"},
+        403: {"description": "Insufficient permissions"},
+        404: {"description": "Movie not found"},
+    },
+)
 async def update_movie(
     movie_id: int,
     body: MovieUpdateRequest,
@@ -114,7 +134,17 @@ async def update_movie(
     return MovieResponse.model_validate(movie)
 
 
-@router.delete("/{movie_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{movie_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete movie",
+    responses={
+        400: {"description": "Cannot delete a movie that has been purchased"},
+        401: {"description": "Not authenticated"},
+        403: {"description": "Insufficient permissions"},
+        404: {"description": "Movie not found"},
+    },
+)
 async def delete_movie(movie_id: int, user: ModeratorUser, db: DBSession) -> None:
     """Delete a movie (moderator only)."""
     movie = await movie_crud.get(db, movie_id)

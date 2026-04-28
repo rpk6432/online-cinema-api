@@ -11,7 +11,15 @@ from schemas.orders import OrderListItemResponse, OrderResponse
 router = APIRouter(prefix="/orders", tags=["Orders"])
 
 
-@router.post("", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    status_code=status.HTTP_201_CREATED,
+    summary="Create order",
+    responses={
+        400: {"description": "Cart is empty"},
+        401: {"description": "Not authenticated"},
+    },
+)
 async def create_order(user: ActiveUser, db: DBSession) -> OrderResponse:
     """Create an order from the current cart."""
     cart = await cart_crud.get_cart(db, user.id)
@@ -23,7 +31,11 @@ async def create_order(user: ActiveUser, db: DBSession) -> OrderResponse:
     return OrderResponse.model_validate(order)
 
 
-@router.get("")
+@router.get(
+    "",
+    summary="List orders",
+    responses={401: {"description": "Not authenticated"}},
+)
 async def list_orders(
     user: ActiveUser,
     db: DBSession,
@@ -53,7 +65,14 @@ async def list_orders(
     )
 
 
-@router.get("/{order_id}")
+@router.get(
+    "/{order_id}",
+    summary="Get order",
+    responses={
+        401: {"description": "Not authenticated"},
+        404: {"description": "Order not found"},
+    },
+)
 async def get_order(order_id: int, user: ActiveUser, db: DBSession) -> OrderResponse:
     """Get order details."""
     order = await order_crud.get_order(db, order_id, user.id)
@@ -62,7 +81,15 @@ async def get_order(order_id: int, user: ActiveUser, db: DBSession) -> OrderResp
     return OrderResponse.model_validate(order)
 
 
-@router.post("/{order_id}/cancel")
+@router.post(
+    "/{order_id}/cancel",
+    summary="Cancel order",
+    responses={
+        400: {"description": "Order already canceled or paid"},
+        401: {"description": "Not authenticated"},
+        404: {"description": "Order not found"},
+    },
+)
 async def cancel_order(order_id: int, user: ActiveUser, db: DBSession) -> OrderResponse:
     """Cancel a pending order."""
     order = await order_crud.get_order(db, order_id, user.id)
