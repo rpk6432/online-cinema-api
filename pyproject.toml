@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "online-cinema-api"
 version = "0.1.0"
-description = "RESTful API for an online cinema platform built with FastAPI, PostgreSQL, Celery, and Stripe"
-authors = ["Your Name <your@email.com>"]
+description = "REST API for an online cinema platform with authentication, role-based access, movie catalog, shopping cart, and payment processing."
+authors = ["Peka Roman pekaromanmail@gmail.com"]
 license = "MIT"
 readme = "README.md"
 package-mode = false
