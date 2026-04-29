@@ -1,0 +1,7 @@
+Welcome to Online Cinema!
+
+Thank you for signing up. Click the link below to activate your account:
+
+{{ url }}
+
+If you did not create an account, you can safely ignore this email.

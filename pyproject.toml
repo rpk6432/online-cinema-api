@@ -1,0 +1,109 @@
+[tool.poetry]
+name = "online-cinema-api"
+version = "0.1.0"
+description = "REST API for an online cinema platform with authentication, role-based access, movie catalog, shopping cart, and payment processing."
+authors = ["Peka Roman pekaromanmail@gmail.com"]
+license = "MIT"
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.14"
+fastapi = "^0.135"
+uvicorn = {extras = ["standard"], version = "^0.34"}
+gunicorn = "^23.0"
+sqlalchemy = {extras = ["asyncio"], version = "^2.0"}
+asyncpg = "^0.31"
+alembic = "^1.14"
+pyjwt = "^2.9"
+bcrypt = "^5.0"
+pydantic-settings = "^2.7"
+email-validator = "^2.2"
+httpx = "^0.28"
+
+aioboto3 = "^15.5"
+celery = {extras = ["redis"], version = "^5.6"}
+stripe = "^15.0"
+jinja2 = "^3.1"
+python-multipart = "^0.0.26"
+sqladmin = "^0.20"
+loguru = "^0.7"
+flower = "^2.0"
+psycopg2-binary = "^2.9.12"
+itsdangerous = "^2.2.0"
+slowapi = "^0.1.9"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3"
+pytest-asyncio = "^0.25"
+pytest-cov = "^6.0"
+ruff = "^0.15"
+mypy = "^1.13"
+pre-commit = "^4.0"
+celery-types = "^0.26.0"
+
+[tool.ruff]
+target-version = "py314"
+line-length = 88
+src = ["src"]
+exclude = ["src/migrations/versions/"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "N",    # pep8-naming
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "T20",  # flake8-print
+    "RUF",  # ruff-specific rules
+]
+ignore = [
+    "S101",  # allow assert in tests
+    "B008",  # allow Query/Depends/Body in argument defaults (FastAPI pattern)
+]
+
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+"scripts/*.py" = ["T201"]
+"admin.py" = ["RUF012"]
+
+[tool.mypy]
+python_version = "3.14"
+strict = true
+plugins = ["pydantic.mypy"]
+mypy_path = "src:tests"
+explicit_package_bases = true
+implicit_reexport = true
+exclude = ["src/migrations/"]
+
+[[tool.mypy.overrides]]
+module = ["aioboto3.*", "slowapi.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["src", "tests"]
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.coverage.run]
+source = ["src"]
+branch = true
+omit = ["src/migrations/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+]
+fail_under = 80
+show_missing = true
+skip_empty = true
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
