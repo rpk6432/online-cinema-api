@@ -19,10 +19,11 @@ COPY --from=builder /usr/local/lib/python3.14/site-packages /usr/local/lib/pytho
 COPY --from=builder /usr/local/bin /usr/local/bin
 
 COPY alembic.ini ./
-COPY entrypoint.sh ./
+COPY scripts/entrypoint.sh ./
 RUN chmod +x entrypoint.sh
 
 COPY src/ ./src/
+COPY scripts/ ./scripts/
 
 ENV PYTHONPATH=src
 ENV PYTHONDONTWRITEBYTECODE=1

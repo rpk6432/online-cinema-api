@@ -68,6 +68,7 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
+"scripts/*.py" = ["T201"]
 "admin.py" = ["RUF012"]
 
 [tool.mypy]
