@@ -12,7 +12,10 @@ router = APIRouter(prefix="/profiles", tags=["Profiles"])
 @router.get(
     "/me",
     summary="Get own profile",
-    responses={401: {"description": "Not authenticated"}},
+    responses={
+        401: {"description": "Not authenticated"},
+        404: {"description": "Profile not found"},
+    },
 )
 async def get_profile(user: ActiveUser, db: DBSession) -> ProfileResponse:
     """Return the authenticated user's profile."""
@@ -29,7 +32,10 @@ async def get_profile(user: ActiveUser, db: DBSession) -> ProfileResponse:
 @router.patch(
     "/me",
     summary="Update own profile",
-    responses={401: {"description": "Not authenticated"}},
+    responses={
+        401: {"description": "Not authenticated"},
+        404: {"description": "Profile not found"},
+    },
 )
 async def update_profile(
     body: ProfileUpdateRequest, user: ActiveUser, db: DBSession
@@ -52,7 +58,10 @@ async def update_profile(
 @router.post(
     "/me/avatar",
     summary="Upload avatar",
-    responses={401: {"description": "Not authenticated"}},
+    responses={
+        401: {"description": "Not authenticated"},
+        404: {"description": "Profile not found"},
+    },
 )
 async def upload_profile_avatar(
     file: UploadFile, user: ActiveUser, db: DBSession
@@ -77,7 +86,10 @@ async def upload_profile_avatar(
     "/me/avatar",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Delete avatar",
-    responses={401: {"description": "Not authenticated"}},
+    responses={
+        401: {"description": "Not authenticated"},
+        404: {"description": "Profile not found"},
+    },
 )
 async def delete_profile_avatar(user: ActiveUser, db: DBSession) -> None:
     """Remove the user's avatar from storage and profile."""

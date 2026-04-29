@@ -10,15 +10,13 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
+import models  # noqa: F401
 from core.config import Settings
 from crud.user import user_crud
 from database.base import Base
 from database.seed import seed_user_groups
 from database.session import get_db_session
 from main import app
-from models import interaction as _interaction_models  # noqa: F401
-from models import movie as _movie_models  # noqa: F401
-from models import user as _user_models  # noqa: F401
 from models.user import UserGroupEnum
 
 test_settings = Settings(_env_file=".env.test")
@@ -54,13 +52,16 @@ async def db() -> AsyncGenerator[AsyncSession]:
 @pytest.fixture
 async def client() -> AsyncGenerator[AsyncClient]:
     app.dependency_overrides[get_db_session] = _override_get_db_session
+    app.state.limiter.enabled = False
     transport = ASGITransport(app=app)
     with (
         patch("routes.auth.send_activation_email"),
         patch("routes.auth.send_password_reset_email"),
+        patch("routes.payments.send_order_confirmation_email"),
     ):
         async with AsyncClient(transport=transport, base_url="http://test") as ac:
             yield ac
+    app.state.limiter.enabled = True
     app.dependency_overrides.clear()
 
 

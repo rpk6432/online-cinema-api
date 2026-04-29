@@ -8,14 +8,23 @@ from schemas.catalogs import StarCreateRequest, StarResponse
 router = APIRouter(prefix="/stars", tags=["Stars"])
 
 
-@router.get("")
+@router.get("", summary="List stars")
 async def list_stars(db: DBSession) -> list[StarResponse]:
     """Return all available stars."""
     stars = await star_crud.get_multi(db, limit=100)
     return [StarResponse.model_validate(s) for s in stars]
 
 
-@router.post("", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    status_code=status.HTTP_201_CREATED,
+    summary="Create star",
+    responses={
+        401: {"description": "Not authenticated"},
+        403: {"description": "Insufficient permissions"},
+        409: {"description": "Star already exists"},
+    },
+)
 async def create_star(
     body: StarCreateRequest, user: ModeratorUser, db: DBSession
 ) -> StarResponse:
@@ -28,7 +37,15 @@ async def create_star(
     return StarResponse.model_validate(star)
 
 
-@router.patch("/{star_id}")
+@router.patch(
+    "/{star_id}",
+    summary="Update star",
+    responses={
+        401: {"description": "Not authenticated"},
+        403: {"description": "Insufficient permissions"},
+        404: {"description": "Star not found"},
+    },
+)
 async def update_star(
     star_id: int,
     body: StarCreateRequest,
@@ -44,7 +61,16 @@ async def update_star(
     return StarResponse.model_validate(star)
 
 
-@router.delete("/{star_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{star_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete star",
+    responses={
+        401: {"description": "Not authenticated"},
+        403: {"description": "Insufficient permissions"},
+        404: {"description": "Star not found"},
+    },
+)
 async def delete_star(star_id: int, user: ModeratorUser, db: DBSession) -> None:
     """Delete a star (moderator only)."""
     star = await star_crud.get(db, star_id)

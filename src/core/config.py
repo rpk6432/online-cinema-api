@@ -10,7 +10,6 @@ class Settings(BaseSettings):
 
     # Application
     app_title: str = "Online Cinema API"
-    app_version: str = "0.1.0"
     debug: bool = False
 
     # Database
@@ -34,6 +33,7 @@ class Settings(BaseSettings):
 
     # S3 / MinIO
     s3_endpoint_url: str = "http://localhost:9000"
+    s3_public_url: str = "http://localhost:9000"
     s3_access_key: str = "minioadmin"
     s3_secret_key: str = "minioadmin"
     s3_bucket_name: str = "cinema-avatars"
@@ -46,6 +46,15 @@ class Settings(BaseSettings):
 
     # Logging
     log_level: str = "DEBUG"
+
+    # Admin
+    admin_secret_key: str = "change-me-admin-secret"
+
+    # CORS
+    cors_origins: list[str] = ["http://localhost:3000"]
+
+    # Rate limiting
+    rate_limit: str = "5/minute"
 
 
 settings = Settings()

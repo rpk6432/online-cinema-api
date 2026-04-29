@@ -1,16 +1,13 @@
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import stripe
-from helpers import create_movie, create_pending_order
+from helpers import (
+    create_movie,
+    create_pending_order,
+    mock_stripe_session,
+    mock_webhook_event,
+)
 from httpx import AsyncClient
-
-
-def _mock_stripe_session(session_id: str = "sess_test_123") -> MagicMock:
-    """Return a mock Stripe Checkout Session."""
-    session = MagicMock()
-    session.id = session_id
-    session.url = "https://checkout.stripe.com/test"
-    return session
 
 
 async def test_checkout(
@@ -23,7 +20,7 @@ async def test_checkout(
     with patch(
         "services.stripe.stripe.checkout.Session.create_async",
         new_callable=AsyncMock,
-        return_value=_mock_stripe_session(),
+        return_value=mock_stripe_session(),
     ):
         resp = await client.post(
             f"/payments/{order['id']}/checkout", headers=auth_headers
@@ -70,17 +67,13 @@ async def test_webhook_success(
     with patch(
         "services.stripe.stripe.checkout.Session.create_async",
         new_callable=AsyncMock,
-        return_value=_mock_stripe_session(session_id),
+        return_value=mock_stripe_session(session_id),
     ):
         await client.post(f"/payments/{order['id']}/checkout", headers=auth_headers)
 
-    mock_event = MagicMock()
-    mock_event.type = "checkout.session.completed"
-    mock_event.data.object = {"id": session_id}
-
     with patch(
         "services.stripe.stripe.Webhook.construct_event",
-        return_value=mock_event,
+        return_value=mock_webhook_event(session_id),
     ):
         resp = await client.post(
             "/payments/webhook",
@@ -123,7 +116,7 @@ async def test_list_payments(
     with patch(
         "services.stripe.stripe.checkout.Session.create_async",
         new_callable=AsyncMock,
-        return_value=_mock_stripe_session(),
+        return_value=mock_stripe_session(),
     ):
         await client.post(f"/payments/{order['id']}/checkout", headers=auth_headers)
 
@@ -144,7 +137,7 @@ async def test_retry_checkout_cancels_previous(
     with patch(
         "services.stripe.stripe.checkout.Session.create_async",
         new_callable=AsyncMock,
-        return_value=_mock_stripe_session("sess_first"),
+        return_value=mock_stripe_session("sess_first"),
     ):
         first = await client.post(
             f"/payments/{order['id']}/checkout", headers=auth_headers
@@ -153,7 +146,7 @@ async def test_retry_checkout_cancels_previous(
     with patch(
         "services.stripe.stripe.checkout.Session.create_async",
         new_callable=AsyncMock,
-        return_value=_mock_stripe_session("sess_second"),
+        return_value=mock_stripe_session("sess_second"),
     ):
         second = await client.post(
             f"/payments/{order['id']}/checkout", headers=auth_headers
@@ -180,17 +173,13 @@ async def test_cart_blocks_paid_movie(
     with patch(
         "services.stripe.stripe.checkout.Session.create_async",
         new_callable=AsyncMock,
-        return_value=_mock_stripe_session(session_id),
+        return_value=mock_stripe_session(session_id),
     ):
         await client.post(f"/payments/{order['id']}/checkout", headers=auth_headers)
 
-    mock_event = MagicMock()
-    mock_event.type = "checkout.session.completed"
-    mock_event.data.object = {"id": session_id}
-
     with patch(
         "services.stripe.stripe.Webhook.construct_event",
-        return_value=mock_event,
+        return_value=mock_webhook_event(session_id),
     ):
         await client.post(
             "/payments/webhook",

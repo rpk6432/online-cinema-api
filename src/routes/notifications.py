@@ -9,7 +9,11 @@ from schemas.notifications import NotificationResponse
 router = APIRouter(prefix="/notifications", tags=["Notifications"])
 
 
-@router.get("")
+@router.get(
+    "",
+    summary="List notifications",
+    responses={401: {"description": "Not authenticated"}},
+)
 async def list_notifications(
     user: ActiveUser,
     db: DBSession,
@@ -37,7 +41,14 @@ async def list_notifications(
     )
 
 
-@router.patch("/{notification_id}/read")
+@router.patch(
+    "/{notification_id}/read",
+    summary="Mark as read",
+    responses={
+        401: {"description": "Not authenticated"},
+        404: {"description": "Notification not found"},
+    },
+)
 async def mark_notification_read(
     notification_id: int, user: ActiveUser, db: DBSession
 ) -> NotificationResponse:

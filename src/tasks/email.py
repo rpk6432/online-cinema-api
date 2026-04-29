@@ -50,3 +50,20 @@ def send_activation_email(email: str, token: str) -> None:
 def send_password_reset_email(email: str, token: str) -> None:
     url = f"{settings.frontend_url}/reset-password?token={token}"
     send_email(email, "Reset your password", "password_reset_email", url=url)
+
+
+@app.task(
+    autoretry_for=(smtplib.SMTPException, ConnectionError, OSError),
+    retry_backoff=True,
+    retry_backoff_max=300,
+    max_retries=5,
+    acks_late=True,
+)
+def send_order_confirmation_email(email: str, order_id: int, amount: str) -> None:
+    send_email(
+        email,
+        "Payment Confirmed",
+        "order_confirmation_email",
+        order_id=str(order_id),
+        amount=amount,
+    )

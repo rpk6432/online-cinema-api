@@ -5,16 +5,27 @@ from core.dependencies import ActiveUser, DBSession
 from core.exceptions import BadRequestError, NotFoundError
 from crud.order import order_crud
 from crud.payment import payment_crud
+from crud.user import user_crud
 from models.order import OrderStatusEnum
 from models.payment import PaymentStatusEnum
 from schemas.common import MessageResponse, PaginatedResponse
 from schemas.payments import CheckoutResponse, PaymentListItemResponse
 from services.stripe import create_checkout_session, verify_webhook
+from tasks.email import send_order_confirmation_email
 
 router = APIRouter(prefix="/payments", tags=["Payments"])
 
 
-@router.post("/{order_id}/checkout", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/{order_id}/checkout",
+    status_code=status.HTTP_201_CREATED,
+    summary="Checkout",
+    responses={
+        400: {"description": "Only pending orders can be paid"},
+        401: {"description": "Not authenticated"},
+        404: {"description": "Order not found"},
+    },
+)
 async def checkout(order_id: int, user: ActiveUser, db: DBSession) -> CheckoutResponse:
     """Create a Stripe Checkout Session for an order."""
     order = await order_crud.get_order(db, order_id, user.id)
@@ -33,7 +44,11 @@ async def checkout(order_id: int, user: ActiveUser, db: DBSession) -> CheckoutRe
     return CheckoutResponse(checkout_url=session.url or "", payment_id=payment.id)
 
 
-@router.post("/webhook")
+@router.post(
+    "/webhook",
+    summary="Stripe webhook",
+    responses={400: {"description": "Invalid signature"}},
+)
 async def webhook(request: Request, db: DBSession) -> MessageResponse:
     """Handle Stripe webhook events."""
     payload = await request.body()
@@ -58,10 +73,22 @@ async def webhook(request: Request, db: DBSession) -> MessageResponse:
             if order is not None:
                 await order_crud.mark_order_paid(db, order)
 
+                user = await user_crud.get(db, payment.user_id)
+                if user is not None:
+                    send_order_confirmation_email.delay(
+                        user.email,
+                        order.id,
+                        str(payment.amount),
+                    )
+
     return MessageResponse(detail="Webhook processed")
 
 
-@router.get("")
+@router.get(
+    "",
+    summary="List payments",
+    responses={401: {"description": "Not authenticated"}},
+)
 async def list_payments(
     user: ActiveUser,
     db: DBSession,

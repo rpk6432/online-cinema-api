@@ -13,7 +13,10 @@ router = APIRouter(prefix="/users", tags=["Users"])
 @router.get(
     "",
     summary="List all users",
-    responses={403: {"description": "Admin access required"}},
+    responses={
+        401: {"description": "Not authenticated"},
+        403: {"description": "Admin access required"},
+    },
 )
 async def list_users(
     user: AdminUser,
@@ -39,6 +42,7 @@ async def list_users(
     "/{user_id}/group",
     summary="Change user group",
     responses={
+        401: {"description": "Not authenticated"},
         403: {"description": "Admin access required"},
         404: {"description": "User not found"},
     },
@@ -59,9 +63,10 @@ async def change_group(
     "/{user_id}/activate",
     summary="Manually activate a user",
     responses={
+        401: {"description": "Not authenticated"},
         403: {"description": "Admin access required"},
         404: {"description": "User not found"},
-        409: {"description": "User already active"},
+        409: {"description": "User is already active"},
     },
 )
 async def activate_user(

@@ -23,7 +23,15 @@ router = APIRouter(tags=["Interactions"])
 # Ratings
 
 
-@router.post("/movies/{movie_id}/rating", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/movies/{movie_id}/rating",
+    status_code=status.HTTP_201_CREATED,
+    summary="Rate movie",
+    responses={
+        401: {"description": "Not authenticated"},
+        404: {"description": "Movie not found"},
+    },
+)
 async def set_rating(
     movie_id: int, body: RatingRequest, user: ActiveUser, db: DBSession
 ) -> RatingResponse:
@@ -35,7 +43,7 @@ async def set_rating(
     return RatingResponse.model_validate(rating)
 
 
-@router.get("/movies/{movie_id}/rating")
+@router.get("/movies/{movie_id}/rating", summary="Get own rating")
 async def get_movie_rating(movie_id: int, db: DBSession) -> MovieRatingResponse:
     """Get average rating and total count for a movie."""
     avg, total = await rating_crud.get_movie_stats(db, movie_id)
@@ -45,7 +53,12 @@ async def get_movie_rating(movie_id: int, db: DBSession) -> MovieRatingResponse:
 # Comments
 
 
-@router.post("/movies/{movie_id}/comments", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/movies/{movie_id}/comments",
+    status_code=status.HTTP_201_CREATED,
+    summary="Add comment",
+    responses={401: {"description": "Not authenticated"}},
+)
 async def create_comment(
     movie_id: int,
     body: CommentCreateRequest,
@@ -68,7 +81,7 @@ async def create_comment(
     return CommentResponse.model_validate(comment)
 
 
-@router.get("/movies/{movie_id}/comments")
+@router.get("/movies/{movie_id}/comments", summary="List comments")
 async def list_comments(
     movie_id: int,
     db: DBSession,
@@ -89,7 +102,11 @@ async def list_comments(
     )
 
 
-@router.get("/comments/{comment_id}/replies")
+@router.get(
+    "/comments/{comment_id}/replies",
+    summary="List replies",
+    responses={404: {"description": "Comment not found"}},
+)
 async def get_replies(comment_id: int, db: DBSession) -> list[CommentResponse]:
     """Get all replies to a comment."""
     comment = await comment_crud.get(db, comment_id)
@@ -99,7 +116,16 @@ async def get_replies(comment_id: int, db: DBSession) -> list[CommentResponse]:
     return [CommentResponse.model_validate(r) for r in replies]
 
 
-@router.delete("/comments/{comment_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/comments/{comment_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete comment",
+    responses={
+        401: {"description": "Not authenticated"},
+        403: {"description": "Cannot delete another user's comment"},
+        404: {"description": "Comment not found"},
+    },
+)
 async def delete_comment(comment_id: int, user: ActiveUser, db: DBSession) -> None:
     """Delete own comment."""
     comment = await comment_crud.get(db, comment_id)
@@ -113,7 +139,14 @@ async def delete_comment(comment_id: int, user: ActiveUser, db: DBSession) -> No
 # Comment Likes
 
 
-@router.post("/comments/{comment_id}/like")
+@router.post(
+    "/comments/{comment_id}/like",
+    summary="Toggle comment like",
+    responses={
+        401: {"description": "Not authenticated"},
+        404: {"description": "Comment not found"},
+    },
+)
 async def toggle_comment_like(
     comment_id: int,
     body: CommentLikeRequest,
@@ -130,7 +163,11 @@ async def toggle_comment_like(
     return CommentLikeResponse.model_validate(result)
 
 
-@router.get("/comments/{comment_id}/likes")
+@router.get(
+    "/comments/{comment_id}/likes",
+    summary="Get comment like count",
+    responses={404: {"description": "Comment not found"}},
+)
 async def get_comment_likes(comment_id: int, db: DBSession) -> CommentLikesStats:
     """Get like/dislike counts for a comment."""
     comment = await comment_crud.get(db, comment_id)

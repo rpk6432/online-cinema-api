@@ -1,0 +1,7 @@
+Payment Confirmed.
+
+Your payment for order #{{ order_id }} has been successfully processed.
+
+Total: ${{ amount }}
+
+Thank you for your purchase.

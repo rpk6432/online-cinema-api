@@ -115,5 +115,18 @@ class CRUDOrder:
         )
         return result.scalar_one_or_none()
 
+    async def is_movie_purchased(self, db: AsyncSession, movie_id: int) -> bool:
+        """Check if any paid order contains this movie."""
+        result = await db.execute(
+            select(func.count())
+            .select_from(OrderItem)
+            .join(Order, OrderItem.order_id == Order.id)
+            .where(
+                OrderItem.movie_id == movie_id,
+                Order.status == OrderStatusEnum.PAID,
+            )
+        )
+        return result.scalar_one() > 0
+
 
 order_crud = CRUDOrder()

@@ -1,4 +1,5 @@
 from typing import Any
+from unittest.mock import MagicMock
 
 from httpx import AsyncClient
 
@@ -44,3 +45,19 @@ async def create_pending_order(
     resp = await client.post("/orders", headers=auth_headers)
     data: dict[str, Any] = resp.json()
     return data
+
+
+def mock_stripe_session(session_id: str = "sess_test_123") -> MagicMock:
+    """Return a mock Stripe Checkout Session."""
+    session = MagicMock()
+    session.id = session_id
+    session.url = "https://checkout.stripe.com/test"
+    return session
+
+
+def mock_webhook_event(session_id: str) -> MagicMock:
+    """Return a mock Stripe webhook event."""
+    event = MagicMock()
+    event.type = "checkout.session.completed"
+    event.data.object = {"id": session_id}
+    return event
